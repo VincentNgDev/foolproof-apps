@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    output   = "../node_modules/@prisma/mysql"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+abstract model ObjectBase {
+    objectID     String    @id @default(uuid())
+    objectName   String?
+    objectNumber String?
+    createdAt    DateTime  @default(now())
+    createdBy    String?
+    updatedAt    DateTime? @updatedAt @default(dbgenerated("NULL"))
+    updatedBy    String?
+    isDeleted    Boolean   @default(false)
+    deletedAt    DateTime? @default(dbgenerated("NULL"))
+    version      Int       @default(1)
+}
+
+model User extends ObjectBase {
+    email             String?    @unique
+    emailVerified     DateTime?
+    image             String?
+    phone             String?
+    mobilePhone       String?
+
+    addressPostalCode String?
+    addressLine1      String?
+    addressLine2      String?
+    addressLine3      String?
+
+    positions         Position[]
+}
+
+model Position extends ObjectBase {
+    roleID String
+    role   Role   @relation(fields: [roleID], references: [objectID])
+    user   User[]
+}
+
+model Role extends ObjectBase {
+    positions Position[]
+}
+
+model Code extends ObjectBase {
+    codeTypeID String
+    codeType   CodeType @relation(fields: [codeTypeID], references: [objectID])
+}
+
+model CodeType extends ObjectBase {
+    codes Code[]
+}
+
+model Post {
+    id        Int      @id @default(autoincrement())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([name])
+}
